@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>客户管理</title>
+    <link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../../../static/assets/module/admin.css?v=318"/>
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表格工具栏 -->
+            <form class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">会员卡号:</label>
+                        <div class="layui-input-inline">
+                            <input name="memberId" class="layui-input" placeholder="输入会员卡号"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">性别:</label>
+                        <div class="layui-input-inline">
+                            <input type="radio" name="sex" value="男" title="男" checked/>
+                            <input type="radio" name="sex" value="女" title="女"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                          <label class="layui-form-label">出生时间</label>
+                          <div class="layui-input-inline">
+                            <input type="date" name="birthday" class="layui-input"  placeholder="yyyy-MM-dd">
+                          </div>
+                    </div>
+
+                    <div class="layui-inline">&emsp;
+                        <button class="layui-btn icon-btn" lay-filter="userTbSearch" lay-submit>
+                            <i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <!-- 数据表格 -->
+            <table id="userTable" lay-filter="userTable"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="userTbBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<!-- 表格状态列 -->
+{% raw %}
+<script type="text/html" id="userTbState">
+    <input type="checkbox" lay-filter="userTbStateCk" value="{{d.userId}}" lay-skin="switch"
+           lay-text="正常|锁定"  {{d.state==0?'checked':''}}  style="display: none;"/>
+    <p style="display: none;">{{d.state==0?'正常':'锁定'}}</p>
+</script>
+{% endraw %}
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=318"></script>
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'admin', 'xmSelect'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var xmSelect = layui.xmSelect;
+        /* 渲染表格 */
+        var insTb = table.render({
+            elem: '#userTable',
+            url: '/page/customer/customer/jsonData',
+            page: true,
+            toolbar: ['<p>',
+                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>&nbsp;',
+                '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>',
+                '</p>'].join(''),
+            cellMinWidth: 100,
+            cols: [[
+                {type: 'checkbox'},
+                {type: 'numbers'},
+                {field: 'memberId', title: '会员卡号', sort: true},
+                {field: 'bitrhday', title: '出生日期', sort: true},
+                {field: 'sex', title: '性别', sort: true},
+                {field: 'registerTime', title: '注册时间', sort: true},
+                {#{field: 'customerId', title: '会员卡号', sort: true},#}
+                {#{field: 'documentNum', title: '单据号', sort: true},#}
+                {#{field: 'commodityName', title: '商品名称', sort: true},#}
+                {#{field: 'commodityPrice', title: '商品售价', sort: true},#}
+                {#{field: 'salesAmount', title: '销售数量', sort: true},#}
+                {#{field: 'consumptionAmount', title: '消费金额', sort: true},#}
+                {#{field: 'salesTime', title: '消费产生的时间', sort: true},#}
+                {field: 'state', title: '状态', templet: '#userTbState', sort: true, width: 100},
+                {title: '操作', toolbar: '#userTbBar', align: 'center', minWidth: 200}
+            ]]
+        });
+
+        /* 表格搜索 */
+        form.on('submit(userTbSearch)', function (data) {
+            insTb.reload({where: data.field, page: {curr: 1}});
+            return false;
+        });
+
+        /* 表格工具条点击事件 */
+        table.on('tool(userTable)', function (obj) {
+            if (obj.event === 'edit') { // 修改
+                showEditModel(obj.data);
+            } else if (obj.event === 'del') { // 删除
+                doDel(obj);
+            } else if (obj.event === 'reset') { // 重置密码
+                resetPsw(obj);
+            }
+        });
+
+        /* 表格头工具栏点击事件 */
+        table.on('toolbar(userTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showEditModel();
+            } else if (obj.event === 'del') { // 删除
+                var checkRows = table.checkStatus('userTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要删除的数据', {icon: 2});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.userId;
+                });
+                doDel({ids: ids});
+            }
+        });
+
+
+
+     });
+</script>
+</body>
+</html>

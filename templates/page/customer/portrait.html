@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>用户画像</title>
+    <link rel="stylesheet" href="../../../static/04style/icon/iconfont.css">
+    <link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../../../static/assets/module/admin.css?v=318"/>
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        body{
+
+            background: #081325 url(../../../static/04style/images/interact.png) center no-repeat;
+            background-size:cover;
+}
+        img {
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="container-header">
+    <ul class="nowTime">
+        <li></li>
+        <li></li>
+    </ul>
+{#    <div class="location">#}
+{#        <i class="icon iconfont icon-buoumaotubiao23"></i>#}
+{#        <span class="areaName"></span>#}
+{#    </div>#}
+    <h3>用户画像</h3>
+</div>
+<div class="container-content" >
+    <div class="top">
+        <div class="layui-fluid" >
+            <div class="layui-card" style="background: transparent; ">
+                <div class="layui-card-body" style="width: 450px;float: left; ">
+                    <!-- 表格工具栏 -->
+                    <form class="layui-form toolbar" action="/page/customer/portraitData" method="post">
+                        <div class="layui-form-item" >
+                            <div class="layui-inline">
+                                <label class="layui-form-label" style="color:#FFFFFF">会员卡号:</label>
+                                <div class="layui-input-inline">
+                                    <input name="memberId" class="layui-input" placeholder="输入会员卡号" />
+                                </div>
+                            </div>
+                            <div class="layui-inline">&emsp;
+                                <button class="layui-btn icon-btn" lay-filter="userTbSearch" style="float: right" lay-submit>
+                                    <i class="layui-icon">&#xe615;</i>搜索
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <div></div>
+                    <!-- 用户画像 -->
+                    <div style="text-align: center;margin: 0 auto;">
+                        <img src="{{ src }}" style="width: 400px;"  alt="用户画像"/>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mid" >
+        <div class="count-share w1" style="width: 650px">
+            <div class="com-count-title">用户画像部分数据</div>
+            <div class="com-screen-content" >
+                    <div class="topRec_List">
+                        <dl>
+                            <dd>会员卡号</dd>
+                            <dd>性别</dd>
+                            <dd>消费金额</dd>
+                        </dl>
+                        <div class="maquee">
+                            <ul id="GRID1">
+                                {% for i in randomList %}
+                                    <li>
+                                        <div>{{ df_profile.iloc[i, 0] }}</div>
+                                        <div>{{ df_profile.iloc[i, 1] }}</div>
+                                        <div>{{ df_profile.iloc[i, 6] }}</div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                <div id="main4" style="width:100%;height:300px;"></div>
+
+            </div>
+            <span class="left-top"></span>
+            <span class="right-top"></span>
+            <span class="left-bottom"></span>
+            <span class="right-bottom"></span>
+        </div>
+    </div>
+</div>
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=318"></script>
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'admin', 'xmSelect'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var xmSelect = layui.xmSelect
+
+        /* 表格工具条点击事件 */
+        table.on('tool(userTable)', function (obj) {
+            if (obj.event === 'edit') { // 修改
+                showEditModel(obj.data);
+            } else if (obj.event === 'del') { // 删除
+                doDel(obj);
+            } else if (obj.event === 'reset') { // 重置密码
+                resetPsw(obj);
+            }
+        });
+
+        /* 表格头工具栏点击事件 */
+        table.on('toolbar(userTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showEditModel();
+            } else if (obj.event === 'del') { // 删除
+                var checkRows = table.checkStatus('userTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要删除的数据', {icon: 2});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.userId;
+                });
+                doDel({ids: ids});
+            }
+        });
+     });
+</script>
+<script type="text/javascript">
+//根据不同的分辨率调用不同的css和js
+	if(window.screen.width>=1600){
+		document.write("<link href='../../../static/04style/css/test-1920.css' rel='stylesheet' type='text/css'>");
+
+		document.writeln("<script type=\"text/javascript\" src=\"../../../static/04style/js/test-1920.js\"><\/script>");
+	}
+	else if(window.screen.width<1600&&window.screen.width>=1280){
+		document.write("<link href='../../../static/04style/css/test-1280.css' rel='stylesheet' type='text/css'>");
+
+		document.writeln("<script type=\"text/javascript\" src=\"../../../static/04style/js/test-1280.js\"><\/script>");
+	}else{
+	document.write("<link href='../../../static/04style/css/test-1024.css' rel='stylesheet' type='text/css'>");
+
+		document.writeln("<script type=\"text/javascript\" src=\"../../../static/04style/js/test-1024.js\"><\/script>");
+	}
+</script>
+<!--大屏-->
+<script type="text/javascript">
+	  function autoScroll(obj){
+			$(obj).find("ul").animate({
+				marginTop : "-39px"
+			},500,function(){
+				$(this).css({marginTop : "0px"}).find("li:first").appendTo(this);
+			})
+		}
+		$(function(){
+			setInterval('autoScroll(".maquee")',2000);
+		})
+</script>
+</body>
+</html>
